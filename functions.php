@@ -31,7 +31,13 @@
 				Array(
 					'labels' => Array(
 						'name' => __( 'Products' ),
-						'singular_name' => __( 'Product' )
+						'singular_name' => __( 'Product' ),
+						'add_new_item' => __( 'New product' ),
+						'edit_item' => __( 'Edit product' ),
+						'new_item' => __( 'New product' ),
+						'view_item' => __( 'View product' ),
+						'search_item' => __( 'Search products' ),
+						'not_found' => __( 'No products found' )
 					),
 				'public' => true,
 				'has_archive' => true
@@ -79,16 +85,10 @@
 			// Echo out the field
 			//echo '<input type="text" name="price" value="' . $post_meta_value. '" />';
 
-			echo '<p><input type="text" size="30" placeholder="' . __( 'Variation ID or title…' ) . '" /> <a class="button" href="#">' . __( 'Add variation' ) . '</a></p>';
+			$format = '<p><input type="text" size="30" placeholder="%s" /> <a class="button" href="#">%s</a> <a class="button button-primary" href="#">%s</a></p>';
+			printf( $format, __( 'Variation ID or title…' ), __( 'Search' ), __( 'New' ) );
 
-			echo '<p>
-			<input type="text" size="30" placeholder="' . __( 'Title…' ) . '" /><br />
-			<textarea placeholder="' . __( 'Description…' ) . '"></textarea>
-			<input type="text" size="10" placeholder="' . __( 'Price…' ) . '" />
-			<input type="text" size="20" placeholder="' . __( 'Colors…' ) . '" />
-			<input type="text" size="20" placeholder="' . __( 'Size…' ) . '" />
-			
-			<a class="button" href="#">' . __( 'Add variation' ) . '</a></p>';
+			//echo '<hr />';
 		}
 
 		/**
