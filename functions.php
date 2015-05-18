@@ -18,6 +18,11 @@
 				'save_post',
 				Array( $this, 'custom_save' )
 			);
+
+			add_action(
+				'pre_get_posts',
+				Array( $this, 'hide_children' )
+			);
 		}
 
 		/**
@@ -55,6 +60,21 @@
 				)
 			);
 		}
+
+		
+function hide_children( $query ) {
+
+	remove_action( 'pre_get_posts', current_filter() );
+
+	if ( is_admin() or ! $query->is_main_query() ) 
+		return;
+
+	if ( ! $query->is_post_type_archive( 'product' ) )
+		return;
+
+	// only top level posts
+	$query->set( 'post_parent', 0 );
+}
 
 		/**
 		 * Add meta-boxes to custom post types
