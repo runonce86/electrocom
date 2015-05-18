@@ -37,10 +37,21 @@
 						'new_item' => __( 'New product' ),
 						'view_item' => __( 'View product' ),
 						'search_item' => __( 'Search products' ),
-						'not_found' => __( 'No products found' )
+						'not_found' => __( 'No products found' ),
+						'not_found_in_trash' => __( 'No products found in trash' ),
+						'parent_item_colon' => __( 'Parent product' )
 					),
-				'public' => true,
-				'has_archive' => true
+					'public' => true,
+					'has_archive' => 'products',
+					'hierarchical' => true,
+					'supports' => Array(
+						'title',
+						'editor',
+						'page-attributes'
+					),
+					'taxonomies' => Array(
+						'category'
+					)
 				)
 			);
 		}
