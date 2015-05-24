@@ -23,6 +23,21 @@
 				'pre_get_posts',
 				Array( $this, 'hide_children' )
 			);
+
+			add_action(
+				'admin_action_create_child_post',
+				Array( $this, 'create_child_post' )
+			);
+
+			add_filter(
+				'page_row_actions',
+				Array( $this, 'create_child_post_link' )
+			);
+
+			add_filter(
+				'wp_insert_post_data',
+				Array( $this, 'filter_post_data' )
+			);
 		}
 
 		/**
@@ -41,7 +56,7 @@
 						'edit_item' => __( 'Edit product' ),
 						'new_item' => __( 'New product' ),
 						'view_item' => __( 'View product' ),
-						'search_item' => __( 'Search products' ),
+						'search_items' => __( 'Search products' ),
 						'not_found' => __( 'No products found' ),
 						'not_found_in_trash' => __( 'No products found in trash' ),
 						'parent_item_colon' => __( 'Parent product' )
@@ -55,26 +70,28 @@
 						'page-attributes'
 					),
 					'taxonomies' => Array(
-						'category'
+						'category',
+						'post_tag'
 					)
 				)
 			);
 		}
 
 		
-function hide_children( $query ) {
+		function hide_children( $query ) {
 
-	remove_action( 'pre_get_posts', current_filter() );
+			remove_action( 'pre_get_posts', current_filter() );
 
-	if ( is_admin() or ! $query->is_main_query() ) 
-		return;
+			if ( is_admin() or ! $query->is_main_query() ) 
+				return;
 
-	if ( ! $query->is_post_type_archive( 'product' ) )
-		return;
+			if ( ! $query->is_post_type_archive( 'product' ) )
+				return;
 
-	// only top level posts
-	$query->set( 'post_parent', 0 );
-}
+			// Only non-child posts
+			$query->set( 'post_parent', 0 );
+		}
+
 
 		/**
 		 * Add meta-boxes to custom post types
@@ -88,38 +105,70 @@ function hide_children( $query ) {
 		function add_product_metaboxes() {
 
 			add_meta_box(
-				'product_variation',
+				'product_childs',
 
-				__( 'Variations' ),
+				__( 'Child products' ),
 
-				Array( $this, 'metabox_variations' ),
+				Array( $this, 'metabox_childs' ),
 
 				'product',
-				'advanced',
+				'side',
 				'high'
 			);
+
+			add_meta_box(
+				'product_stock',
+
+				__( 'Stock' ),
+
+				Array( $this, 'metabox_stock' ),
+
+				'product',
+				'side'
+			);
+
 		}
 
 		/**
 		 * Meta-box base_metabox_1
 		 */ 
-		function metabox_variations() {
+		function metabox_childs() {
+
 			global $post;
 
-			// Noncename needed to verify where the data originated
-			echo '<input type="hidden" name="variations_noncename" id="variations_noncename" value="' . 
-			wp_create_nonce( plugin_basename(__FILE__) ) . '" />';
+			$format = '<p>%s</p>';
+			printf( $format,  __( 'Each child product represents a variation of its parent. Add childs by relating another product to this one.' ) );
 
-			// Get the location data if its already been entered
-			//$post_meta_value= get_post_meta($post->ID, 'price', true);
-		
-			// Echo out the field
-			//echo '<input type="text" name="price" value="' . $post_meta_value. '" />';
+			$format = '<p><a href="admin.php?action=create_child_post&amp;post=%s" class="button">%s</a></p>';
+			printf( $format, $post->ID, __( 'New child' ) );
 
-			$format = '<p><input type="text" size="30" placeholder="%s" /> <a class="button" href="#">%s</a> <a class="button button-primary" href="#">%s</a></p>';
-			printf( $format, __( 'Variation ID or title…' ), __( 'Search' ), __( 'New' ) );
+			// List or table of child posts.
 
-			//echo '<hr />';
+			$childs = get_children( Array(
+					'post_parent' => $post->ID,
+					'post_type' => 'product')
+				);
+
+			if( count( $childs ) > 0 ) {
+
+				print '<ul>';
+
+				foreach( $childs as $child ) {
+
+					$format = '<li><a href="%s">%s (%s)</a></li>';
+					$url = get_edit_post_link( $child->ID );
+
+					printf( $format, $url, $child->post_title, $child->ID );
+				}
+
+				print '</ul>';
+			}
+		}
+
+		function metabox_stock() {
+
+			global $post;
+
 		}
 
 		/**
@@ -174,6 +223,95 @@ function hide_children( $query ) {
 					delete_post_meta( $post_id, $key );
 				}
 			}
+		}
+
+		/*
+		 * Function creates post duplicate as a draft and redirects then to the edit post screen
+		 */
+		function create_child_post() {
+
+			global $wpdb;
+
+			if (! ( isset( $_GET['post']) || isset( $_POST['post'])  || ( isset($_REQUEST['action']) && 'create_child_post' == $_REQUEST['action'] ) ) ) {
+				wp_die('No post to duplicate has been supplied!');
+			}
+
+			// Get the original post id
+			$post_id = (isset($_GET['post']) ? $_GET['post'] : $_POST['post']);
+
+			// And all the original post data then
+			$post = get_post( $post_id );
+
+			// Post author
+			$current_user = wp_get_current_user();
+			$new_post_author = $current_user->ID;
+
+			// If post data exists, create the post duplicate
+			if (isset( $post ) && $post != null) {
+
+				// New post data array
+				$args = array(
+					'comment_status' => $post->comment_status,
+					'ping_status'    => $post->ping_status,
+					'post_author'    => $new_post_author,
+					'post_content'   => $post->post_content,
+					'post_excerpt'   => $post->post_excerpt,
+					'post_name'      => $post->post_name,
+					'post_parent'    => $post->ID,
+					'post_password'  => $post->post_password,
+					'post_status'    => 'draft',
+					'post_title'     => $post->post_title,
+					'post_type'      => $post->post_type,
+					'to_ping'        => $post->to_ping,
+					'menu_order'     => $post->menu_order
+				);
+
+				// Insert the post by wp_insert_post() function
+				$new_post_id = wp_insert_post( $args );
+
+				// Get all current post terms ad set them to the new post draft
+				// Returns array of taxonomy names for post type, ex array("category", "post_tag")
+				$taxonomies = get_object_taxonomies($post->post_type);
+				foreach ($taxonomies as $taxonomy) {
+					$post_terms = wp_get_object_terms($post_id, $taxonomy, array('fields' => 'slugs'));
+					wp_set_object_terms($new_post_id, $post_terms, $taxonomy, false);
+				}
+
+				// Duplicate all post meta
+				$post_meta_infos = $wpdb->get_results("SELECT meta_key, meta_value FROM $wpdb->postmeta WHERE post_id=$post_id");
+				if (count($post_meta_infos)!=0) {
+					$sql_query = "INSERT INTO $wpdb->postmeta (post_id, meta_key, meta_value) ";
+					foreach ($post_meta_infos as $meta_info) {
+						$meta_key = $meta_info->meta_key;
+						$meta_value = addslashes($meta_info->meta_value);
+						$sql_query_sel[]= "SELECT $new_post_id, '$meta_key', '$meta_value'";
+					}
+					$sql_query.= implode(" UNION ALL ", $sql_query_sel);
+					$wpdb->query($sql_query);
+				}
+
+				// Finally, redirect to the edit post screen for the new draft
+				wp_redirect( admin_url( 'post.php?action=edit&post=' . $new_post_id ) );
+				exit;
+			} else {
+				wp_die('Post creation failed, could not find original post: ' . $post_id);
+			}
+		}
+
+		function create_child_post_link( $actions ) {
+			global $post;
+
+			if (current_user_can('edit_posts') && $post->post_type == 'product') {
+				$format = '<a href="admin.php?action=create_child_post&amp;post=%s">%s</a>';
+				$actions['create_child'] = sprintf( $format, $post->ID, __( 'New child' ) );
+			}
+			return $actions;
+		}
+
+		function filter_post_data( $data ) {
+			global $post;
+			// TODO If $post has childs
+			//	Force $post to post_parent = 0
 		}
 	}
 
