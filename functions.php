@@ -2,26 +2,35 @@
 
 	class starter_theme_ecommerce {
 
+		/**
+		 * Add actions and filters.
+		 *
+		 */
 		function __construct() {
 
 			add_action(
 				'init',
-				Array( $this, 'create_post_types' )
+				Array( $this, 'create_product_type' )
 			);
 
 			add_action(
 				'add_meta_boxes',
-				Array( $this, 'add_product_metaboxes' )
+				Array( $this, 'add_product_meta' )
 			);
 
 			add_action(
 				'save_post',
-				Array( $this, 'custom_save' )
+				Array( $this, 'save_product_meta' )
+			);
+
+			add_action(
+				'save_post',
+				Array( $this, 'variations_rules' )
 			);
 
 			add_action(
 				'pre_get_posts',
-				Array( $this, 'hide_children' )
+				Array( $this, 'hide_product_variations' )
 			);
 
 			add_action(
@@ -33,19 +42,13 @@
 				'admin_enqueue_scripts',
 				Array( $this, 'load_admin_style' )
 			);
-
-			add_filter(
-				'wp_insert_post_data',
-				Array( $this, 'filter_post_data' )
-			);
 		}
 
 		/**
-		 * Custom post types
+		 * Create Product post type.
 		 *
-		 * Add more custom post types using register_post_type().
 		 */
-		function create_post_types() {
+		function create_product_type() {
 
 			register_post_type( 'product',
 				Array(
@@ -77,8 +80,12 @@
 			);
 		}
 
-		
-		function hide_children( $query ) {
+
+		/**
+		 * Remove product variations from archive loop.
+		 *
+		 */		
+		function hide_product_variations( $query ) {
 
 			remove_action( 'pre_get_posts', current_filter() );
 
@@ -92,6 +99,10 @@
 			$query->set( 'post_parent', 0 );
 		}
 
+		/**
+		 * Add admin styles.
+		 *
+		 */
 		function load_admin_style() {
 
                         wp_register_style(
@@ -105,23 +116,15 @@
 		}
 
 		/**
-		 * Add meta-boxes to custom post types
-		 */
-
-		/**
-		 * Meta-boxes for custom post type "product"
+		 * Add Product post type meta.
 		 *
-		 * Add more using add_meta_box()
 		 */
-		function add_product_metaboxes() {
+		function add_product_meta() {
 
 			add_meta_box(
 				'product_variations',
-
 				__( 'Variations' ),
-
 				Array( $this, 'metabox_variations' ),
-
 				'product',
 				'side',
 				'high'
@@ -129,19 +132,24 @@
 
 			add_meta_box(
 				'product_stock',
-
 				__( 'Stock' ),
-
 				Array( $this, 'metabox_stock' ),
-
 				'product',
 				'side'
 			);
 
+			add_meta_box(
+				'product_price',
+				__( 'Price' ),
+				Array( $this, 'metabox_price' ),
+				'product',
+				'side'
+			);
 		}
 
 		/**
-		 * Meta-box base_metabox_1
+		 * Variations metabox.
+		 *
 		 */ 
 		function metabox_variations() {
 
@@ -151,16 +159,16 @@
 			printf( $format, $post->ID, __( 'New child' ) );
 
 			// List of child posts.
-			$childs = get_children( Array(
+			$children = get_children( Array(
 					'post_parent' => $post->ID,
 					'post_type' => 'product')
 				);
 
-			if( count( $childs ) > 0 ) {
+			if( count( $children ) > 0 ) {
 
 				print '<ul>';
 
-				foreach( $childs as $child ) {
+				foreach( $children as $child ) {
 
 					$format = '<li><a href="%s">%s (%s)</a></li>';
 					$url = get_edit_post_link( $child->ID );
@@ -172,20 +180,31 @@
 			}
 		}
 
+		/**
+		 * Price metabox.
+		 *
+		 */ 
+		function metabox_price() {
+			print '<div class="input"><input type="number" min="0" step="50" /></div>';
+		}
+
+		/**
+		 * Stock metabox.
+		 *
+		 */ 
 		function metabox_stock() {
 
 			global $post;
 
-			print '<div><input type="number" min="0" /></div>';
+			print '<div class="input"><input type="number" min="0" /></div>';
 
 		}
 
 		/**
-		 * Save input (received from html form)
+		 * Save product meta.
 		 *
-		 * $post_id is automatically passed by do_action().
 		 */
-		function custom_save( $post_id ) {
+		function save_product_meta( $post_id ) {
 
 			// If $post_id is missing get it from global $post
 			if( !$post_id ) {
@@ -234,8 +253,9 @@
 			}
 		}
 
-		/*
-		 * Function creates post duplicate as a draft and redirects then to the edit post screen
+		/**
+		 * Function creates post duplicate as a draft and redirects then to the edit post screen.
+		 *
 		 */
 		function create_child_post() {
 
@@ -307,14 +327,61 @@
 			}
 		}
 
-		function filter_post_data( $data ) {
-			global $post;
+		/**
+		 * Rules for product's variations.
+		 *
+		 */
+		function variations_rules( $post_id ) {
 
-			// TODO If $post has childs
-			//	Force $post to post_parent = 0
+			// Avoid infinite loop
+			remove_action(
+				'save_post',
+				Array( $this, 'variations_rules' )
+			);
 
-			return $data;
+			// Avoid adding a child to an already child post
+			$post = get_post( $post_id );
+
+			if( $post->post_parent > 0 ) {
+				$ancestors = get_post_ancestors( $post_id );
+
+				// If more than one ancestors
+				if( count( $ancestors ) > 1 ) {
+
+					// Parent is also a child so it's not allowed
+					$this->remove_parent( $post_id );
+				}
+			}
+
+			// Avoid adding parent to a post with childs
+			$args = Array(
+				'post_parent' => $post_id,
+				'post_type' => 'product'
+			);
+
+			$children = get_children( $args );
+
+			if( count( $children ) > 0 ) {
+
+				// Remove post parent
+				$this->remove_parent( $post_id );
+
+			}
 		}
+
+		/**
+		 * Helper for removing parent post.
+		 *
+		 */
+		function remove_parent( $post_id ) {
+			wp_update_post(
+				Array(
+					'ID' => $post_id,
+					'post_parent' => 0
+				)
+			);
+		}
+
 	}
 
 	$theme = new starter_theme_ecommerce();

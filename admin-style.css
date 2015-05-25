@@ -4,6 +4,6 @@
 .wp-admin #product_childs ul {
 	margin: 0;
 }
-.wp-admin #product_stock input[type="number"] {
+.wp-admin #side-sortables .postbox .input *[type="number"] {
 	width: 100%;
 }
