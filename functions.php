@@ -29,9 +29,14 @@
 				Array( $this, 'create_child_post' )
 			);
 
-			add_filter(
-				'page_row_actions',
-				Array( $this, 'create_child_post_link' )
+			add_action(
+				'admin_enqueue_scripts',
+				Array( $this, 'load_admin_style' )
+			);
+
+			add_action(
+				'admin_enqueue_scripts',
+				Array( $this, 'add_color_picker' )
 			);
 
 			add_filter(
@@ -92,6 +97,17 @@
 			$query->set( 'post_parent', 0 );
 		}
 
+		function load_admin_style() {
+
+                        wp_register_style(
+                                'admin-style',
+                                get_stylesheet_directory_uri() . '/admin-style.css'
+                        );
+
+                        wp_enqueue_style(
+                                'admin-style'
+                        );
+		}
 
 		/**
 		 * Add meta-boxes to custom post types
@@ -105,11 +121,11 @@
 		function add_product_metaboxes() {
 
 			add_meta_box(
-				'product_childs',
+				'product_variations',
 
-				__( 'Child products' ),
+				__( 'Variations' ),
 
-				Array( $this, 'metabox_childs' ),
+				Array( $this, 'metabox_variations' ),
 
 				'product',
 				'side',
@@ -127,19 +143,37 @@
 				'side'
 			);
 
+			add_meta_box(
+				'product_color',
+
+				__( 'Color' ),
+
+				Array( $this, 'metabox_color' ),
+
+				'product',
+				'side'
+			);
+
 		}
 
 		/**
 		 * Meta-box base_metabox_1
 		 */ 
-		function metabox_childs() {
+		function metabox_color() {
+			print '<div><input type="text" class="color-picker" /></div>';
+		}
+
+		function metabox_variations() {
 
 			global $post;
 
-			$format = '<p>%s</p>';
-			printf( $format,  __( 'Each child product represents a variation of its parent. Add childs by relating another product to this one.' ) );
+			//$format = '<p>%s</p>';
+			//printf( $format,  __( 'Each child product represents a variation of its parent. Add childs by relating another product to this one.' ) );
 
-			$format = '<p><a href="admin.php?action=create_child_post&amp;post=%s" class="button">%s</a></p>';
+			//$format = '<p><input type="text" size="20" /> <input type="button" value="Search" class="button" /></p>';
+			//print $format;
+
+			$format = '<div class="action"><a href="admin.php?action=create_child_post&amp;post=%s" class="button">%s</a></div>';
 			printf( $format, $post->ID, __( 'New child' ) );
 
 			// List or table of child posts.
@@ -168,6 +202,8 @@
 		function metabox_stock() {
 
 			global $post;
+
+			print '<div><input type="number" min="0" /></div>';
 
 		}
 
@@ -298,20 +334,31 @@
 			}
 		}
 
-		function create_child_post_link( $actions ) {
-			global $post;
-
-			if (current_user_can('edit_posts') && $post->post_type == 'product') {
-				$format = '<a href="admin.php?action=create_child_post&amp;post=%s">%s</a>';
-				$actions['create_child'] = sprintf( $format, $post->ID, __( 'New child' ) );
-			}
-			return $actions;
-		}
-
 		function filter_post_data( $data ) {
 			global $post;
+
 			// TODO If $post has childs
 			//	Force $post to post_parent = 0
+
+			return $data;
+		}
+
+		function add_color_picker( $hook ) {
+			 
+			if( is_admin() ) {
+
+				wp_enqueue_style( 'wp-color-picker' );
+				wp_enqueue_script( 'wp-color-picker' );
+
+				wp_register_script(
+					'load-color-picker',
+					get_stylesheet_directory_uri() . '/script.js'
+				);
+
+				wp_enqueue_script(
+					'load-color-picker'
+				);
+			}
 		}
 	}
 

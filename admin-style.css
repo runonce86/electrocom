@@ -1,0 +1,9 @@
+.wp-admin #side-sortables .postbox .action {
+	text-align: right;
+}
+.wp-admin #product_childs ul {
+	margin: 0;
+}
+.wp-admin #product_stock input[type="number"] {
+	width: 100%;
+}
