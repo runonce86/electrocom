@@ -34,11 +34,6 @@
 				Array( $this, 'load_admin_style' )
 			);
 
-			add_action(
-				'admin_enqueue_scripts',
-				Array( $this, 'add_color_picker' )
-			);
-
 			add_filter(
 				'wp_insert_post_data',
 				Array( $this, 'filter_post_data' )
@@ -143,26 +138,11 @@
 				'side'
 			);
 
-			add_meta_box(
-				'product_color',
-
-				__( 'Color' ),
-
-				Array( $this, 'metabox_color' ),
-
-				'product',
-				'side'
-			);
-
 		}
 
 		/**
 		 * Meta-box base_metabox_1
 		 */ 
-		function metabox_color() {
-			print '<div><input type="text" class="color-picker" /></div>';
-		}
-
 		function metabox_variations() {
 
 			global $post;
@@ -334,24 +314,6 @@
 			//	Force $post to post_parent = 0
 
 			return $data;
-		}
-
-		function add_color_picker( $hook ) {
-			 
-			if( is_admin() ) {
-
-				wp_enqueue_style( 'wp-color-picker' );
-				wp_enqueue_script( 'wp-color-picker' );
-
-				wp_register_script(
-					'load-color-picker',
-					get_stylesheet_directory_uri() . '/script.js'
-				);
-
-				wp_enqueue_script(
-					'load-color-picker'
-				);
-			}
 		}
 	}
 
