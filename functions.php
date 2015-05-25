@@ -167,17 +167,10 @@
 
 			global $post;
 
-			//$format = '<p>%s</p>';
-			//printf( $format,  __( 'Each child product represents a variation of its parent. Add childs by relating another product to this one.' ) );
-
-			//$format = '<p><input type="text" size="20" /> <input type="button" value="Search" class="button" /></p>';
-			//print $format;
-
-			$format = '<div class="action"><a href="admin.php?action=create_child_post&amp;post=%s" class="button">%s</a></div>';
+			$format = '<div class="action"><a href="admin.php?action=create_child_post&amp;post=%s" target="_blank" class="button">%s</a></div>';
 			printf( $format, $post->ID, __( 'New child' ) );
 
-			// List or table of child posts.
-
+			// List of child posts.
 			$childs = get_children( Array(
 					'post_parent' => $post->ID,
 					'post_type' => 'product')
