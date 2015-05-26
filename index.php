@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Electrocom
  * Description: Electronic commerce.
- * Plugin URI: https://github.com/runonce86/wp-electronic-commerce
+ * Plugin URI: https://github.com/runonce86/electrocom
  * Author: Camilo Rivera
  * Author URI: https://github.com/runonce86
  */
