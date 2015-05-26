@@ -1,10 +1,10 @@
 <?php
-/*
-Plugin Name: Electronic commerce
-Description: Adds post type Product.
-Author: Camilo Rivera
-Author URI: https://github.com/runonce86
-*/
+	/**
+	 * Plugin Name: Electronic Commerce
+	 * Description: Adds post type Product.
+	 * Author: Camilo Rivera
+	 * Author URI: https://github.com/runonce86
+	 */
 
 	class starter_theme_ecommerce {
 
