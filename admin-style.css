@@ -1,7 +1,7 @@
 .wp-admin #side-sortables .postbox .action {
 	text-align: right;
 }
-.wp-admin #product_childs ul {
+.wp-admin #product_variations ul {
 	margin: 0;
 }
 .wp-admin #side-sortables .postbox .input *[type="number"] {
