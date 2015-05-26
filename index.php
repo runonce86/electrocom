@@ -1,4 +1,10 @@
 <?php
+/*
+Plugin Name: Electronic commerce
+Description: Adds post type Product.
+Author: Camilo Rivera
+Author URI: https://github.com/runonce86
+*/
 
 	class starter_theme_ecommerce {
 
@@ -8,6 +14,10 @@
 		 */
 		function __construct() {
 
+			/**
+			 * Models
+			 *
+			 */
 			add_action(
 				'init',
 				Array( $this, 'create_product_type' )
@@ -28,19 +38,27 @@
 				Array( $this, 'variations_rules' )
 			);
 
+			/**
+			 * Views
+			 *
+			 */
 			add_action(
 				'pre_get_posts',
 				Array( $this, 'hide_product_variations' )
 			);
 
 			add_action(
-				'admin_action_create_child_post',
-				Array( $this, 'create_child_post' )
-			);
-
-			add_action(
 				'admin_enqueue_scripts',
 				Array( $this, 'load_admin_style' )
+			);
+
+			/**
+			 * Controllers
+			 *
+			 */
+			add_action(
+				'admin_action_create_child_post',
+				Array( $this, 'create_child_post' )
 			);
 		}
 
@@ -287,7 +305,7 @@
 
                         wp_register_style(
                                 'admin-style',
-                                get_stylesheet_directory_uri() . '/admin-style.css'
+                                plugin_dir_url( __FILE__ ) . 'admin-style.css'
                         );
 
                         wp_enqueue_style(
