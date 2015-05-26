@@ -82,40 +82,6 @@
 
 
 		/**
-		 * Remove product variations from archive loop.
-		 *
-		 */		
-		function hide_product_variations( $query ) {
-
-			remove_action( 'pre_get_posts', current_filter() );
-
-			if ( is_admin() or ! $query->is_main_query() ) 
-				return;
-
-			if ( ! $query->is_post_type_archive( 'product' ) )
-				return;
-
-			// Only non-child posts
-			$query->set( 'post_parent', 0 );
-		}
-
-		/**
-		 * Add admin styles.
-		 *
-		 */
-		function load_admin_style() {
-
-                        wp_register_style(
-                                'admin-style',
-                                get_stylesheet_directory_uri() . '/admin-style.css'
-                        );
-
-                        wp_enqueue_style(
-                                'admin-style'
-                        );
-		}
-
-		/**
 		 * Add Product post type meta.
 		 *
 		 */
@@ -254,6 +220,82 @@
 		}
 
 		/**
+		 * Rules for product's variations.
+		 *
+		 */
+		function variations_rules( $post_id ) {
+
+			// Avoid infinite loop
+			remove_action(
+				'save_post',
+				Array( $this, 'variations_rules' )
+			);
+
+			// Avoid adding a child to an already child post
+			$post = get_post( $post_id );
+
+			if( $post->post_parent > 0 ) {
+				$ancestors = get_post_ancestors( $post_id );
+
+				// If more than one ancestors
+				if( count( $ancestors ) > 1 ) {
+
+					// Parent is also a child so it's not allowed
+					$this->remove_parent( $post_id );
+				}
+			}
+
+			// Avoid adding parent to a post with childs
+			$args = Array(
+				'post_parent' => $post_id,
+				'post_type' => 'product'
+			);
+
+			$children = get_children( $args );
+
+			if( count( $children ) > 0 ) {
+
+				// Remove post parent
+				$this->remove_parent( $post_id );
+
+			}
+		}
+
+		/**
+		 * Remove product variations from archive loop.
+		 *
+		 */		
+		function hide_product_variations( $query ) {
+
+			remove_action( 'pre_get_posts', current_filter() );
+
+			if ( is_admin() or ! $query->is_main_query() ) 
+				return;
+
+			if ( ! $query->is_post_type_archive( 'product' ) )
+				return;
+
+			// Only non-child posts
+			$query->set( 'post_parent', 0 );
+		}
+
+		/**
+		 * Add admin styles.
+		 *
+		 */
+		function load_admin_style() {
+
+                        wp_register_style(
+                                'admin-style',
+                                get_stylesheet_directory_uri() . '/admin-style.css'
+                        );
+
+                        wp_enqueue_style(
+                                'admin-style'
+                        );
+		}
+
+		/**
 		 * Function creates post duplicate as a draft and redirects then to the edit post screen.
 		 *
 		 */
@@ -328,48 +370,6 @@
 		}
 
 		/**
-		 * Rules for product's variations.
-		 *
-		 */
-		function variations_rules( $post_id ) {
-
-			// Avoid infinite loop
-			remove_action(
-				'save_post',
-				Array( $this, 'variations_rules' )
-			);
-
-			// Avoid adding a child to an already child post
-			$post = get_post( $post_id );
-
-			if( $post->post_parent > 0 ) {
-				$ancestors = get_post_ancestors( $post_id );
-
-				// If more than one ancestors
-				if( count( $ancestors ) > 1 ) {
-
-					// Parent is also a child so it's not allowed
-					$this->remove_parent( $post_id );
-				}
-			}
-
-			// Avoid adding parent to a post with childs
-			$args = Array(
-				'post_parent' => $post_id,
-				'post_type' => 'product'
-			);
-
-			$children = get_children( $args );
-
-			if( count( $children ) > 0 ) {
-
-				// Remove post parent
-				$this->remove_parent( $post_id );
-
-			}
-		}
-
-		/**
 		 * Helper for removing parent post.
 		 *
 		 */
@@ -381,7 +381,6 @@
 				)
 			);
 		}
-
 	}
 
 	$theme = new starter_theme_ecommerce();
