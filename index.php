@@ -2,6 +2,7 @@
 	/**
 	 * Plugin Name: Electronic Commerce
 	 * Description: Adds post type Product.
+	 * Plugin URI: https://github.com/runonce86/wp-electronic-commerce
 	 * Author: Camilo Rivera
 	 * Author URI: https://github.com/runonce86
 	 */
