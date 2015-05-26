@@ -1,2 +1,2 @@
-# wp-runonce-ecommerce
-Child theme with e-commerce support for wp-runonce.
+# wp-electronic-commerce
+A plugin for WordPress that adds a Product post type.
