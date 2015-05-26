@@ -1,2 +1,2 @@
-# Electronic commerce
-A plugin for WordPress that adds a Product post type.
+# Electrocom
+A WordPress plugin for electronic commerce.
