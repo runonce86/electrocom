@@ -206,7 +206,18 @@ if ( ! class_exists( 'Electrocom' ) ) {
 
 			global $post;
 
-			print '<div class="input"><input name="product_stock" type="number" min="0" /></div>';
+			// Noncename needed to verify where the data originated
+			$nonce = wp_create_nonce( plugin_basename ( __FILE__ ) );
+			$format = '<input type="hidden" name="product_stock_nonce" value="%s" />'; 
+			printf( $format, $nonce );
+
+			// Get the location data if its already been entered
+			$value = get_post_meta( $post->ID, 'product_stock', true );
+		
+			// Echo out the field
+			$format = '<div class="input"><input name="product_stock" type="number" min="0" value="%s" /></div>';
+			printf( $format, $value );
+
 
 		}
 
@@ -223,24 +234,25 @@ if ( ! class_exists( 'Electrocom' ) ) {
 				null,
 				2
 			);
-
-			// Security check
-			if ( ! wp_verify_nonce( $_POST['product_price_nonce'], plugin_basename( __FILE__ ) ) ) {
-				return $post_id;
-			}
+		
+			// Input names we wanna save
+			// TODO Avoid hard-coding input names?
+			$events_meta['product_price'] = $_POST['product_price'];
+			$events_meta['product_stock'] = $_POST['product_stock'];
 
 			// Is the user allowed to edit the post or page?
 			if ( ! current_user_can( 'edit_post', $post->ID )) {
 				return $post_id;
 			}
 
-			// Input names we wanna save
-			// TODO Avoid hard-coding input names?
-			$events_meta['product_price'] = $_POST['product_price'];
-		
 			// Add values of $events_meta as custom fields
 			// Cycle through the $events_meta array!
 			foreach( $events_meta as $key => $value ) {
+
+				// Security check
+				if ( ! wp_verify_nonce( $_POST[$key . '_nonce'], plugin_basename( __FILE__ ) ) ) {
+					return $post_id;
+				}
 
 				// Don't store custom data twice
 				if( $post->post_type == 'revision' ) {
