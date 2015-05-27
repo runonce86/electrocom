@@ -106,7 +106,9 @@ if ( ! class_exists( 'Electrocom' ) ) {
 					'taxonomies' => Array(
 						'category',
 						'post_tag'
-					)
+					),
+					'menu_position' => 5,
+					'menu_icon' => 'dashicons-cart'
 				)
 			);
 		}
