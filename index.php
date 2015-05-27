@@ -12,6 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+// Define class
 if ( ! class_exists( 'Electrocom' ) ) {
 
 	class Electrocom {
@@ -148,7 +149,7 @@ if ( ! class_exists( 'Electrocom' ) ) {
 			global $post;
 
 			$format = '<div class="action"><a href="admin.php?action=create_child_post&amp;post=%s" target="_blank" class="button">%s</a></div>';
-			printf( $format, $post->ID, __( 'New child' ) );
+			printf( $format, $post->ID, __( 'New variation' ) );
 
 			// List of child posts.
 			$children = get_children( Array(
@@ -410,5 +411,6 @@ if ( ! class_exists( 'Electrocom' ) ) {
 	}
 }
 
+// Create instance
 new Electrocom();
 ?>
