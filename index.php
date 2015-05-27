@@ -38,13 +38,17 @@ if ( ! class_exists( 'Electrocom' ) ) {
 			);
 
 			add_action(
-				'save_post',
-				Array( $this, 'save_product_meta' )
+				'save_post_product',
+				Array( $this, 'save_product_meta' ),
+				null,
+				2
 			);
 
 			add_action(
-				'save_post',
-				Array( $this, 'variations_rules' )
+				'save_post_product',
+				Array( $this, 'variations_rules' ),
+				null,
+				2
 			);
 
 			/**
@@ -178,7 +182,20 @@ if ( ! class_exists( 'Electrocom' ) ) {
 		 *
 		 */ 
 		function metabox_price() {
-			print '<div class="input"><input type="number" min="0" step="50" /></div>';
+
+			global $post;
+
+			// Noncename needed to verify where the data originated
+			$nonce = wp_create_nonce( plugin_basename ( __FILE__ ) );
+			$format = '<input type="hidden" name="product_price_nonce" value="%s" />'; 
+			printf( $format, $nonce );
+
+			// Get the location data if its already been entered
+			$value = get_post_meta( $post->ID, 'product_price', true );
+		
+			// Echo out the field
+			$format = '<div class="input"><input name="product_price" type="number" min="0" step="50" value="%s" /></div>';
+			printf( $format, $value );
 		}
 
 		/**
@@ -189,7 +206,7 @@ if ( ! class_exists( 'Electrocom' ) ) {
 
 			global $post;
 
-			print '<div class="input"><input type="number" min="0" /></div>';
+			print '<div class="input"><input name="product_stock" type="number" min="0" /></div>';
 
 		}
 
@@ -197,26 +214,30 @@ if ( ! class_exists( 'Electrocom' ) ) {
 		 * Save product meta.
 		 *
 		 */
-		function save_product_meta( $post_id ) {
+		function save_product_meta( $post_id, $post ) {
 
-			// If $post_id is missing get it from global $post
-			if( ! $post_id ) {
-				global $post;
-				$post_id = $post->ID;
-			}
+			// Avoid infinite loop
+			remove_action(
+				'save_post_product',
+				Array( $this, 'save_product_meta' ),
+				null,
+				2
+			);
 
 			// Security check
-			if ( ! wp_verify_nonce( $_POST['_noncename'], plugin_basename(__FILE__) ) )
+			if ( ! wp_verify_nonce( $_POST['product_price_nonce'], plugin_basename( __FILE__ ) ) ) {
 				return $post_id;
+			}
 
 			// Is the user allowed to edit the post or page?
-			if ( ! current_user_can( 'edit_post', $post->ID ))
+			if ( ! current_user_can( 'edit_post', $post->ID )) {
 				return $post_id;
+			}
 
 			// Input names we wanna save
 			// TODO Avoid hard-coding input names?
-			//$events_meta['price'] = $_POST['price'];
-			
+			$events_meta['product_price'] = $_POST['product_price'];
+		
 			// Add values of $events_meta as custom fields
 			// Cycle through the $events_meta array!
 			foreach( $events_meta as $key => $value ) {
@@ -225,9 +246,6 @@ if ( ! class_exists( 'Electrocom' ) ) {
 				if( $post->post_type == 'revision' ) {
 					return;
 				}
-
-				// If $value is an array, make it a CSV (unlikely)
-				$value = implode( ',', (array) $value );
 
 				// If the custom field already has a value
 				if( get_post_meta( $post_id, $key, FALSE ) ) {
@@ -250,17 +268,17 @@ if ( ! class_exists( 'Electrocom' ) ) {
 		 * Rules for product's variations.
 		 *
 		 */
-		function variations_rules( $post_id ) {
+		function variations_rules( $post_id, $post ) {
 
 			// Avoid infinite loop
 			remove_action(
-				'save_post',
-				Array( $this, 'variations_rules' )
+				'save_post_product',
+				Array( $this, 'variations_rules' ),
+				null,
+				2
 			);
 
 			// Avoid adding a child to an already child post
-			$post = get_post( $post_id );
-
 			if( $post->post_parent > 0 ) {
 				$ancestors = get_post_ancestors( $post_id );
 
