@@ -194,7 +194,7 @@ if ( ! class_exists( 'Electrocom' ) ) {
 			$value = get_post_meta( $post->ID, 'product_price', true );
 		
 			// Echo out the field
-			$format = '<div class="input"><input name="product_price" type="number" min="0" step="50" value="%s" /></div>';
+			$format = '<div class="input"><input name="product_price" type="number" min="0" value="%s" /></div>';
 			printf( $format, $value );
 		}
 
