@@ -33,6 +33,11 @@ if ( ! class_exists( 'Electrocom' ) ) {
 			);
 
 			add_action(
+				'init',
+				Array( $this, 'create_versions_taxonomy' )
+			);
+
+			add_action(
 				'add_meta_boxes',
 				Array( $this, 'add_product_meta' )
 			);
@@ -86,6 +91,7 @@ if ( ! class_exists( 'Electrocom' ) ) {
 					'labels' => Array(
 						'name' => __( 'Products' ),
 						'singular_name' => __( 'Product' ),
+						'all_items' => __( 'All products' ),
 						'add_new_item' => __( 'New product' ),
 						'edit_item' => __( 'Edit product' ),
 						'new_item' => __( 'New product' ),
@@ -105,7 +111,8 @@ if ( ! class_exists( 'Electrocom' ) ) {
 					),
 					'taxonomies' => Array(
 						'category',
-						'post_tag'
+						'post_tag',
+						'versions'
 					),
 					'menu_position' => 5,
 					'menu_icon' => 'dashicons-cart'
@@ -113,6 +120,34 @@ if ( ! class_exists( 'Electrocom' ) ) {
 			);
 		}
 
+		function create_versions_taxonomy() {
+
+			$labels = Array(
+				'name' => __( 'Versions' ),
+				'singular_name' => __( 'Version' ),
+				'all_items' => __( 'Versions' ),
+				'edit_item' => __( 'Edit version' ),
+				'view_item' => __( 'View version' ),
+				'update_item' => __( 'Update version' ),
+				'add_new_item' => __( 'Add new version' ),
+				'new_item_name' => __( 'New version name' ),
+				'parent_item' => __( 'Parent version' ),
+				'parent_item_colon' => __( 'Parent version:' ),
+				'search_items' => __( 'Search versions' ),
+				'not_found' => __( 'No versions found.' )
+			);
+
+			$args = Array(
+				'labels' => $labels,
+				'hierarchical' => true
+			);
+
+			register_taxonomy(
+				'version',
+				'product',
+				$args
+			);
+		}
 
 		/**
 		 * Add Product post type meta.
