@@ -120,6 +120,10 @@ if ( ! class_exists( 'Electrocom' ) ) {
 			);
 		}
 
+		/**
+		 * Create Versions taxonomy.
+		 *
+		 */
 		function create_versions_taxonomy() {
 
 			$labels = Array(
