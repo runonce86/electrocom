@@ -67,7 +67,7 @@ if ( ! class_exists( 'Electrocom' ) ) {
 
 			add_action(
 				'admin_enqueue_scripts',
-				Array( $this, 'load_admin_style' )
+				Array( $this, 'load_style' )
 			);
 
 			/**
@@ -378,18 +378,18 @@ if ( ! class_exists( 'Electrocom' ) ) {
 		}
 
 		/**
-		 * Add admin styles.
+		 * Add styles.
 		 *
 		 */
-		function load_admin_style() {
+		function load_style() {
 
 			wp_register_style(
-				'admin-style',
-				plugin_dir_url( __FILE__ ) . 'admin-style.css'
+				'style',
+				plugin_dir_url( __FILE__ ) . 'style.css'
 			);
 
 			wp_enqueue_style(
-				'admin-style'
+				'style'
 			);
 		}
 

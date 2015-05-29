@@ -1,12 +1,9 @@
-/*
-Theme Name: Runonce E-Commerce
-Theme URI: http://runonce.p.ht/
-Description: E-commerce orientated theme for Runonce theme.
-Template: runonce
-Version: 1.0
-License: GNU General Public License
-Tags: child-theme, e-commerce
-*/
-body {
-	font-family: sans-serif;
+.wp-admin #side-sortables .postbox .action {
+	text-align: right;
+}
+.wp-admin #product_variations ul {
+	margin: 0;
+}
+.wp-admin #side-sortables .postbox .input *[type="number"] {
+	width: 100%;
 }
