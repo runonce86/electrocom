@@ -33,11 +33,6 @@ if ( ! class_exists( 'Electrocom' ) ) {
 			);
 
 			add_action(
-				'init',
-				Array( $this, 'create_versions_taxonomy' )
-			);
-
-			add_action(
 				'add_meta_boxes',
 				Array( $this, 'add_product_meta' )
 			);
@@ -70,6 +65,11 @@ if ( ! class_exists( 'Electrocom' ) ) {
 				Array( $this, 'load_style' )
 			);
 
+			add_action(
+				'admin_enqueue_scripts',
+				Array( $this, 'load_admin_scripts' )
+			);
+
 			/**
 			 * Controllers
 			 *
@@ -77,6 +77,18 @@ if ( ! class_exists( 'Electrocom' ) ) {
 			add_action(
 				'admin_action_create_child_post',
 				Array( $this, 'create_child_post' )
+			);
+		}
+
+		function load_admin_scripts() {
+
+			wp_register_script(
+				'script',
+				plugin_dir_url( __FILE__ ) . 'script.js'
+			);
+
+			wp_enqueue_script(
+				'script'
 			);
 		}
 
@@ -111,45 +123,11 @@ if ( ! class_exists( 'Electrocom' ) ) {
 					),
 					'taxonomies' => Array(
 						'category',
-						'post_tag',
-						'versions'
+						'post_tag'
 					),
 					'menu_position' => 5,
 					'menu_icon' => 'dashicons-cart'
 				)
-			);
-		}
-
-		/**
-		 * Create Versions taxonomy.
-		 *
-		 */
-		function create_versions_taxonomy() {
-
-			$labels = Array(
-				'name' => __( 'Versions' ),
-				'singular_name' => __( 'Version' ),
-				'all_items' => __( 'Versions' ),
-				'edit_item' => __( 'Edit version' ),
-				'view_item' => __( 'View version' ),
-				'update_item' => __( 'Update version' ),
-				'add_new_item' => __( 'Add new version' ),
-				'new_item_name' => __( 'New version name' ),
-				'parent_item' => __( 'Parent version' ),
-				'parent_item_colon' => __( 'Parent version:' ),
-				'search_items' => __( 'Search versions' ),
-				'not_found' => __( 'No versions found.' )
-			);
-
-			$args = Array(
-				'labels' => $labels,
-				'hierarchical' => true
-			);
-
-			register_taxonomy(
-				'version',
-				'product',
-				$args
 			);
 		}
 
@@ -182,6 +160,13 @@ if ( ! class_exists( 'Electrocom' ) ) {
 				Array( $this, 'metabox_price' ),
 				'product',
 				'side'
+			);
+
+			add_meta_box(
+				'product_images',
+				__( 'Images' ),
+				Array( $this, 'metabox_images' ),
+				'product'
 			);
 		}
 
@@ -259,6 +244,12 @@ if ( ! class_exists( 'Electrocom' ) ) {
 			$format = '<div class="input"><input name="product_stock" type="number" min="0" value="%s" /></div>';
 			printf( $format, $value );
 
+
+		}
+
+		function metabox_images() {
+
+			print '<div><a href="#" class="button insert-media" data-editor="product-images">Insert images</a></div>';
 
 		}
 
