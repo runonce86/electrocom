@@ -56,11 +56,6 @@ if ( ! class_exists( 'Electrocom' ) ) {
 			 *
 			 */
 			add_action(
-				'pre_get_posts',
-				Array( $this, 'hide_product_variations' )
-			);
-
-			add_action(
 				'admin_enqueue_scripts',
 				Array( $this, 'load_style' )
 			);
@@ -348,24 +343,6 @@ if ( ! class_exists( 'Electrocom' ) ) {
 				$this->remove_parent( $post_id );
 
 			}
-		}
-
-		/**
-		 * Remove product variations from archive loop.
-		 *
-		 */		
-		function hide_product_variations( $query ) {
-
-			remove_action( 'pre_get_posts', current_filter() );
-
-			if ( is_admin() or ! $query->is_main_query() ) 
-				return;
-
-			if ( ! $query->is_post_type_archive( 'product' ) )
-				return;
-
-			// Only non-child posts
-			$query->set( 'post_parent', 0 );
 		}
 
 		/**
