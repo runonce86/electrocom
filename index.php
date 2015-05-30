@@ -114,7 +114,8 @@ if ( ! class_exists( 'Electrocom' ) ) {
 					'supports' => Array(
 						'title',
 						'editor',
-						'page-attributes'
+						'page-attributes',
+						'custom-fields'
 					),
 					'taxonomies' => Array(
 						'category',
@@ -208,14 +209,14 @@ if ( ! class_exists( 'Electrocom' ) ) {
 
 			// Noncename needed to verify where the data originated
 			$nonce = wp_create_nonce( plugin_basename ( __FILE__ ) );
-			$format = '<input type="hidden" name="product_price_nonce" value="%s" />'; 
+			$format = '<input type="hidden" name="_product_price_nonce" value="%s" />'; 
 			printf( $format, $nonce );
 
 			// Get the location data if its already been entered
-			$value = get_post_meta( $post->ID, 'product_price', true );
+			$value = get_post_meta( $post->ID, '_product_price', true );
 		
 			// Echo out the field
-			$format = '<div class="input"><input name="product_price" type="number" min="0" value="%s" /></div>';
+			$format = '<div class="input"><input name="_product_price" type="number" min="0" value="%s" /></div>';
 			printf( $format, $value );
 		}
 
@@ -229,14 +230,14 @@ if ( ! class_exists( 'Electrocom' ) ) {
 
 			// Noncename needed to verify where the data originated
 			$nonce = wp_create_nonce( plugin_basename ( __FILE__ ) );
-			$format = '<input type="hidden" name="product_stock_nonce" value="%s" />'; 
+			$format = '<input type="hidden" name="_product_stock_nonce" value="%s" />'; 
 			printf( $format, $nonce );
 
 			// Get the location data if its already been entered
-			$value = get_post_meta( $post->ID, 'product_stock', true );
+			$value = get_post_meta( $post->ID, '_product_stock', true );
 		
 			// Echo out the field
-			$format = '<div class="input"><input name="product_stock" type="number" min="0" value="%s" /></div>';
+			$format = '<div class="input"><input name="_product_stock" type="number" min="0" value="%s" /></div>';
 			printf( $format, $value );
 
 
@@ -264,8 +265,8 @@ if ( ! class_exists( 'Electrocom' ) ) {
 		
 			// Input names we wanna save
 			// TODO Avoid hard-coding input names?
-			$events_meta['product_price'] = $_POST['product_price'];
-			$events_meta['product_stock'] = $_POST['product_stock'];
+			$events_meta['_product_price'] = $_POST['_product_price'];
+			$events_meta['_product_stock'] = $_POST['_product_stock'];
 
 			// Is the user allowed to edit the post or page?
 			if ( ! current_user_can( 'edit_post', $post->ID )) {
