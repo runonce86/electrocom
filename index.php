@@ -77,9 +77,34 @@ if ( ! class_exists( 'Electrocom' ) ) {
 
 		function load_admin_scripts() {
 
+			// TODO Only load when posting a new Product
+
 			wp_register_script(
 				'script',
 				plugin_dir_url( __FILE__ ) . 'script.js'
+			);
+
+			// Pre-load images metadata
+			$args = Array(
+				'post_type' => 'attachment',
+				'post_mime_type' =>'image',
+				'post_status' => 'inherit',
+				'posts_per_page' => -1,
+			);
+
+			$images = new WP_Query( $args );
+			$images = $images->posts;
+
+			foreach( $images as $image ) {
+
+				$thumbnails[$image->ID] = wp_get_attachment_image_src( $image->ID );
+			}
+
+			// Send thumbnails data
+			wp_localize_script(
+				'script',
+				'elcom_images',
+				$thumbnails
 			);
 
 			wp_enqueue_script(
@@ -133,6 +158,7 @@ if ( ! class_exists( 'Electrocom' ) ) {
 		 */
 		function add_product_meta() {
 
+			// TODO Hide Variations for posts with parent > 0
 			add_meta_box(
 				'product_variations',
 				__( 'Variations' ),
